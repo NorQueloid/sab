@@ -3,12 +3,17 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
+-- Debug: Confirm script is running
+print("Norqueloid Universal Hub: Script started")
+
 -- Create ScreenGui
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "NorqueloidUniversalHub"
 screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 screenGui.ResetOnSpawn = false
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Enabled = true -- Ensure GUI is visible by default
+print("Norqueloid Universal Hub: ScreenGui created")
 
 -- Create Main Frame
 local frame = Instance.new("Frame")
@@ -18,6 +23,7 @@ frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.BorderSizePixel = 1
 frame.BorderColor3 = Color3.fromRGB(50, 50, 50)
 frame.Parent = screenGui
+print("Norqueloid Universal Hub: Frame created")
 
 -- Title Label
 local title = Instance.new("TextLabel")
@@ -30,20 +36,22 @@ title.TextSize = 18
 title.Font = Enum.Font.SourceSansBold
 title.TextXAlignment = Enum.TextXAlignment.Center
 title.Parent = frame
+print("Norqueloid Universal Hub: Title created")
 
 -- Status Label
 local statusLabel = Instance.new("TextLabel")
 statusLabel.Size = UDim2.new(1, -10, 0, 20)
 statusLabel.Position = UDim2.new(0, 5, 1, -25)
 statusLabel.BackgroundTransparency = 1
-statusLabel.Text = "Select a hub to load"
+statusLabel.Text = "Select a hub"
 statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
 statusLabel.TextSize = 12
 statusLabel.Font = Enum.Font.SourceSans
 statusLabel.TextXAlignment = Enum.TextXAlignment.Center
 statusLabel.Parent = frame
+print("Norqueloid Universal Hub: Status label created")
 
--- Function to create a clean TextButton
+-- Function to create a TextButton
 local function createButton(name, positionY, url, color)
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(0.8, 0, 0, 30)
@@ -56,16 +64,18 @@ local function createButton(name, positionY, url, color)
     button.TextSize = 14
     button.Font = Enum.Font.SourceSans
     button.Parent = frame
+    print("Norqueloid Universal Hub: Button created for " .. name)
 
     button.MouseButton1Click:Connect(function()
         statusLabel.TextColor3 = Color3.fromRGB(100, 200, 255)
-        statusLabel.Text = "Loading " .. name .. "..."
+        statusLabel.Text = "Loading " .. name
+        print("Norqueloid Universal Hub: Attempting to load " .. name)
         
         spawn(function()
             local success, err = pcall(function()
                 local scriptContent = game:HttpGet(url)
                 if not scriptContent or scriptContent == "" then
-                    error("Failed to fetch script from " .. name)
+                    error("Failed to fetch script for " .. name)
                 end
                 local func = loadstring(scriptContent)
                 if not func then
@@ -76,17 +86,18 @@ local function createButton(name, positionY, url, color)
             
             if success then
                 statusLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-                statusLabel.Text = name .. " loaded!"
+                statusLabel.Text = name .. " loaded"
+                print("Norqueloid Universal Hub: " .. name .. " loaded successfully")
             else
                 statusLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
                 statusLabel.Text = "Failed: " .. name
-                warn("Error for " .. name .. ": " .. tostring(err))
+                print("Norqueloid Universal Hub: Error for " .. name .. ": " .. tostring(err))
             end
             
             -- Reset status after 3 seconds
             wait(3)
             statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-            statusLabel.Text = "Select a hub to load"
+            statusLabel.Text = "Select a hub"
         end)
     end)
 end
@@ -123,8 +134,9 @@ local toggleKey = Enum.KeyCode.RightShift
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed and input.KeyCode == toggleKey then
         screenGui.Enabled = not screenGui.Enabled
+        print("Norqueloid Universal Hub: GUI toggled to " .. tostring(screenGui.Enabled))
     end
 end)
 
--- Initial status
-statusLabel.Text = "Press RightShift to toggle"
+-- Initial debug
+print("Norqueloid Universal Hub: GUI should be visible (Enabled = " .. tostring(screenGui.Enabled) .. ")")
