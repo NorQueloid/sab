@@ -1,8 +1,9 @@
+```lua
 -- Services
-local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
 
 -- Create ScreenGui
 local screenGui = Instance.new("ScreenGui")
@@ -13,8 +14,8 @@ screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 -- Create Main Frame
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 300, 0, 260)
-frame.Position = UDim2.new(0.5, -150, 0.5, -130)
+frame.Size = UDim2.new(0, 280, 0, 240)
+frame.Position = UDim2.new(0.5, -140, 0.5, -120)
 frame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
 frame.BorderSizePixel = 0
 frame.Parent = screenGui
@@ -41,7 +42,7 @@ title.Position = UDim2.new(0, 0, 0, 10)
 title.BackgroundTransparency = 1
 title.Text = "Norqueloid Universal Hub"
 title.TextColor3 = Color3.fromRGB(100, 200, 255)
-title.TextSize = 22
+title.TextSize = 20
 title.Font = Enum.Font.GothamBold
 title.TextXAlignment = Enum.TextXAlignment.Center
 title.Parent = frame
@@ -58,10 +59,10 @@ statusLabel.Font = Enum.Font.Gotham
 statusLabel.TextXAlignment = Enum.TextXAlignment.Center
 statusLabel.Parent = frame
 
--- Function to create a WindHub-style TextButton
+-- Function to create a WindUI-style TextButton
 local function createButton(name, positionY, url, color)
     local button = Instance.new("TextButton")
-    button.Size = UDim2.new(0.8, 0, 0, 40)
+    button.Size = UDim2.new(0.8, 0, 0, 35)
     button.Position = UDim2.new(0.1, 0, 0, positionY)
     button.BackgroundColor3 = color
     button.BorderSizePixel = 0
@@ -78,10 +79,19 @@ local function createButton(name, positionY, url, color)
     -- Hover Animation
     local hoverTweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
     button.MouseEnter:Connect(function()
-        TweenService:Create(button, hoverTweenInfo, {BackgroundTransparency = 0.1}):Play()
+        TweenService:Create(button, hoverTweenInfo, {BackgroundTransparency = 0.1, Size = UDim2.new(0.82, 0, 0, 38)}):Play()
     end)
     button.MouseLeave:Connect(function()
-        TweenService:Create(button, hoverTweenInfo, {BackgroundTransparency = 0}):Play()
+        TweenService:Create(button, hoverTweenInfo, {BackgroundTransparency = 0, Size = UDim2.new(0.8, 0, 0, 35)}):Play()
+    end)
+
+    -- Click Animation
+    local clickTweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quart, Enum.EasingDirection.InOut)
+    button.MouseButton1Down:Connect(function()
+        TweenService:Create(button, clickTweenInfo, {Size = UDim2.new(0.78, 0, 0, 33)}):Play()
+    end)
+    button.MouseButton1Up:Connect(function()
+        TweenService:Create(button, clickTweenInfo, {Size = UDim2.new(0.8, 0, 0, 35)}):Play()
     end)
 
     -- Execution Logic
@@ -91,11 +101,15 @@ local function createButton(name, positionY, url, color)
         
         spawn(function()
             local success, err = pcall(function()
-                local script = game:HttpGet(url)
-                if not script or script == "" then
-                    error("Failed to fetch script from URL")
+                local scriptContent = game:HttpGet(url)
+                if not scriptContent or scriptContent == "" then
+                    error("Failed to fetch script from " .. name)
                 end
-                loadstring(script)()
+                local func = loadstring(scriptContent)
+                if not func then
+                    error("Failed to compile script for " .. name)
+                end
+                func()
             end)
             
             if success then
@@ -117,10 +131,10 @@ end
 
 -- Create buttons for each hub
 createButton("Miranda Hub", 60, "https://pastefy.app/JJVhs3rK/raw", Color3.fromRGB(120, 80, 200))
-createButton("Lennon Hub", 110, "https://pastefy.app/MJw2J4T6/raw", Color3.fromRGB(80, 200, 120))
-createButton("Lemon Hub", 160, "https://api.luarmor.net/files/v3/loaders/2341c827712daf923191e93377656f67.lua", Color3.fromRGB(255, 180, 80))
+createButton("Lennon Hub", 105, "https://pastefy.app/MJw2J4T6/raw", Color3.fromRGB(80, 200, 120))
+createButton("Lemon Hub", 150, "https://api.luarmor.net/files/v3/loaders/2341c827712daf923191e93377656f67.lua", Color3.fromRGB(255, 180, 80))
 
--- Draggable functionality
+-- Draggable Functionality
 local dragging, dragStart, startPos
 frame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -128,27 +142,4 @@ frame.InputBegan:Connect(function(input)
         dragStart = input.Position
         startPos = frame.Position
         input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
-
-frame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
-        local delta = input.Position - dragStart
-        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
-
--- Toggle GUI visibility with RightShift
-local toggleKey = Enum.KeyCode.RightShift
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == toggleKey then
-        screenGui.Enabled = not screenGui.Enabled
-    end
-end)
-
--- Initial status
-statusLabel.Text = "Press RightShift to toggle"
+            if input.UserInputState
