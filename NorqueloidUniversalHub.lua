@@ -6,137 +6,117 @@ local LocalPlayer = Players.LocalPlayer
 -- Debug: Confirm script is running
 print("Norqueloid Universal Hub: Script started")
 
--- Create ScreenGui
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "NorqueloidUniversalHub"
-screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-screenGui.ResetOnSpawn = false
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-screenGui.Enabled = true -- Ensure GUI is visible by default
-print("Norqueloid Universal Hub: ScreenGui created")
+-- Load WindUI library
+local success, WindUI = pcall(function()
+    return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+end)
+if not success then
+    warn("Norqueloid Universal Hub: Failed to load WindUI library: " .. tostring(WindUI))
+    return
+end
+print("Norqueloid Universal Hub: WindUI library loaded")
 
--- Create Main Frame
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 250, 0, 200)
-frame.Position = UDim2.new(0.5, -125, 0.5, -100)
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-frame.BorderSizePixel = 1
-frame.BorderColor3 = Color3.fromRGB(50, 50, 50)
-frame.Parent = screenGui
-print("Norqueloid Universal Hub: Frame created")
-
--- Title Label
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 30)
-title.Position = UDim2.new(0, 0, 0, 5)
-title.BackgroundTransparency = 1
-title.Text = "Norqueloid Universal Hub"
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.TextSize = 18
-title.Font = Enum.Font.SourceSansBold
-title.TextXAlignment = Enum.TextXAlignment.Center
-title.Parent = frame
-print("Norqueloid Universal Hub: Title created")
-
--- Status Label
-local statusLabel = Instance.new("TextLabel")
-statusLabel.Size = UDim2.new(1, -10, 0, 20)
-statusLabel.Position = UDim2.new(0, 5, 1, -25)
-statusLabel.BackgroundTransparency = 1
-statusLabel.Text = "Select a hub"
-statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-statusLabel.TextSize = 12
-statusLabel.Font = Enum.Font.SourceSans
-statusLabel.TextXAlignment = Enum.TextXAlignment.Center
-statusLabel.Parent = frame
-print("Norqueloid Universal Hub: Status label created")
-
--- Function to create a TextButton
-local function createButton(name, positionY, url, color)
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(0.8, 0, 0, 30)
-    button.Position = UDim2.new(0.1, 0, 0, positionY)
-    button.BackgroundColor3 = color
-    button.BorderSizePixel = 1
-    button.BorderColor3 = Color3.fromRGB(50, 50, 50)
-    button.Text = name
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.TextSize = 14
-    button.Font = Enum.Font.SourceSans
-    button.Parent = frame
-    print("Norqueloid Universal Hub: Button created for " .. name)
-
-    button.MouseButton1Click:Connect(function()
-        statusLabel.TextColor3 = Color3.fromRGB(100, 200, 255)
-        statusLabel.Text = "Loading " .. name
-        print("Norqueloid Universal Hub: Attempting to load " .. name)
-        
-        spawn(function()
-            local success, err = pcall(function()
-                local scriptContent = game:HttpGet(url)
-                if not scriptContent or scriptContent == "" then
-                    error("Failed to fetch script for " .. name)
-                end
-                local func = loadstring(scriptContent)
-                if not func then
-                    error("Failed to compile script for " .. name)
-                end
-                func()
-            end)
-            
-            if success then
-                statusLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-                statusLabel.Text = name .. " loaded"
-                print("Norqueloid Universal Hub: " .. name .. " loaded successfully")
-            else
-                statusLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
-                statusLabel.Text = "Failed: " .. name
-                print("Norqueloid Universal Hub: Error for " .. name .. ": " .. tostring(err))
-            end
-            
-            -- Reset status after 3 seconds
-            wait(3)
-            statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-            statusLabel.Text = "Select a hub"
-        end)
-    end)
+-- Gradient text function (from example)
+local function gradient(text, startColor, endColor)
+    local result = ""
+    local length = #text
+    for i = 1, length do
+        local t = (i - 1) / math.max(length - 1, 1)
+        local r = math.floor((startColor.R + ((endColor.R - startColor.R) * t)) * 255)
+        local g = math.floor((startColor.G + ((endColor.G - startColor.G) * t)) * 255)
+        local b = math.floor((startColor.B + ((endColor.B - startColor.B) * t)) * 255)
+        local char = text:sub(i, i)
+        result = result .. '<font color=\"rgb(' .. r .. ", " .. g .. ", " .. b .. ')\">' .. char .. "</font>"
+    end
+    return result
 end
 
--- Create buttons for each hub
-createButton("Miranda Hub", 40, "https://pastefy.app/JJVhs3rK/raw", Color3.fromRGB(60, 60, 60))
-createButton("Lennon Hub", 80, "https://pastefy.app/MJw2J4T6/raw", Color3.fromRGB(60, 60, 60))
-createButton("Lemon Hub", 120, "https://api.luarmor.net/files/v3/loaders/2341c827712daf923191e93377656f67.lua", Color3.fromRGB(60, 60, 60))
+-- Create WindUI Window
+local Window = WindUI:CreateWindow({
+    Title = gradient("Norqueloid Universal Hub", Color3.fromHex("#00eaff"), Color3.fromHex("#002a2e")),
+    Icon = "rocket", -- Common icon for hubs
+    Author = "Script Loader (2025)",
+    Folder = "NorqueloidHub",
+    Size = UDim2.fromOffset(400, 320),
+    Transparent = true,
+    Theme = "Dark",
+    SideBarWidth = 150,
+    UserEnabled = true,
+    HasOutline = true
+})
+print("Norqueloid Universal Hub: Window created")
 
--- Draggable Functionality
-local dragging, dragStart, startPos
-frame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = frame.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
+-- Create Main Tab
+local MainTab = Window:Tab({Title = "Scripts", Icon = "script"})
 
-frame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
-        local delta = input.Position - dragStart
-        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
+-- Function to create and handle script execution button
+local function createScriptButton(name, url)
+    MainTab:Button({
+        Title = name,
+        Callback = function()
+            WindUI:Notify({
+                Title = "Loading " .. name,
+                Content = "Attempting to execute script...",
+                Icon = "rocket",
+                Duration = 3
+            })
+            print("Norqueloid Universal Hub: Attempting to load " .. name)
+            
+            spawn(function()
+                local success, err = pcall(function()
+                    local scriptContent = game:HttpGet(url)
+                    if not scriptContent or scriptContent == "" then
+                        error("Failed to fetch script for " .. name)
+                    end
+                    local func = loadstring(scriptContent)
+                    if not func then
+                        error("Failed to compile script for " .. name)
+                    end
+                    func()
+                end)
+                
+                if success then
+                    WindUI:Notify({
+                        Title = name .. " Loaded",
+                        Content = "Script executed successfully!",
+                        Icon = "check-circle",
+                        Duration = 3
+                    })
+                    print("Norqueloid Universal Hub: " .. name .. " loaded successfully")
+                else
+                    WindUI:Notify({
+                        Title = name .. " Failed",
+                        Content = "Error: " .. tostring(err),
+                        Icon = "x-circle",
+                        Duration = 5
+                    })
+                    print("Norqueloid Universal Hub: Error for " .. name .. ": " .. tostring(err))
+                end
+            end)
+        end
+    })
+end
+
+-- Create buttons for each script
+createScriptButton("Miranda Hub", "https://pastefy.app/JJVhs3rK/raw")
+createScriptButton("Lennon Hub", "https://pastefy.app/MJw2J4T6/raw")
+createScriptButton("Lemon Hub", "https://api.luarmor.net/files/v3/loaders/2341c827712daf923191e93377656f67.lua")
+print("Norqueloid Universal Hub: Buttons created")
 
 -- Toggle GUI visibility with RightShift
 local toggleKey = Enum.KeyCode.RightShift
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed and input.KeyCode == toggleKey then
-        screenGui.Enabled = not screenGui.Enabled
-        print("Norqueloid Universal Hub: GUI toggled to " .. tostring(screenGui.Enabled))
+        Window:Toggle()
+        print("Norqueloid Universal Hub: Window toggled")
     end
 end)
 
--- Initial debug
-print("Norqueloid Universal Hub: GUI should be visible (Enabled = " .. tostring(screenGui.Enabled) .. ")")
+-- Initial notification
+WindUI:Notify({
+    Title = "Norqueloid Universal Hub",
+    Content = "Press RightShift to toggle. Click a button to load a script.",
+    Icon = "info",
+    Duration = 5
+})
+print("Norqueloid Universal Hub: GUI initialized and should be visible")
