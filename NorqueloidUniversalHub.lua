@@ -1,4 +1,3 @@
-```lua
 -- Services
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
@@ -129,4 +128,3 @@ end)
 
 -- Initial status
 statusLabel.Text = "Press RightShift to toggle"
-```
